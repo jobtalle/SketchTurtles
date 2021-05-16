@@ -17,7 +17,7 @@ import {Turtles} from "./turtles.js";
 
     resize();
 
-    turtles = new Turtles();
+    turtles = new Turtles(canvas);
 
     let lastTime = performance.now();
     let updateTime = 0;
