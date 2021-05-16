@@ -1,10 +1,10 @@
 import {ShaderShield} from "./shaderShield.js";
 import {Quad} from "./gl/quad.js";
-import {SDF} from "./gl/sdf.js";
+import {DistanceField} from "./gl/distanceField.js";
 import {Vector} from "../vector.js";
 
 export class ShieldMaker {
-    static MAX_WIDTH = 200;
+    static MAX_WIDTH = 300;
     static MAX_HEIGHT = 300;
 
     /**
@@ -16,8 +16,8 @@ export class ShieldMaker {
         this.canvas.height = ShieldMaker.MAX_HEIGHT;
         this.gl = this.canvas.getContext("webgl", {preserveDrawingBuffer: true});
 
-        this.sdf = new SDF(this.gl, ShieldMaker.MAX_WIDTH, ShieldMaker.MAX_HEIGHT);
         this.quad = new Quad(this.gl);
+        this.sdf = new DistanceField(this.gl, this.quad, ShieldMaker.MAX_WIDTH, ShieldMaker.MAX_HEIGHT);
         this.shaderShield = new ShaderShield(this.gl);
     }
 
@@ -33,7 +33,7 @@ export class ShieldMaker {
 
         const points = [];
 
-        for (let i = 0; i < 30; ++i)
+        for (let i = 0; i < 18; ++i)
             points.push(new Vector(Math.random() * shield.width, Math.random() * shield.height));
 
         this.sdf.seed(points);

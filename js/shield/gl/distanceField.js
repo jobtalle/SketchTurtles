@@ -1,15 +1,21 @@
-export class SDF {
+import {ShaderDistanceField} from "./shaderDistanceField.js";
+
+export class DistanceField {
     /**
      * Construct a signed distance field
      * @param {WebGLRenderingContext} gl A WebGL rendering context
+     * @param {Quad} quad A quad
      * @param {number} width The SDF width
      * @param {number} height The SDF height
      */
-    constructor(gl, width, height) {
+    constructor(gl, quad, width, height) {
         this.gl = gl;
+        this.quad = quad;
         this.width = width;
         this.height = height;
+        this.range = Math.max(width, height);
         this.front = 0;
+        this.shader = new ShaderDistanceField(gl);
         this.textures = [
             gl.createTexture(),
             gl.createTexture()];
@@ -31,11 +37,26 @@ export class SDF {
     }
 
     /**
+     * Flip the buffers
+     */
+    flip() {
+        this.front = 1 - this.front;
+    }
+
+    /**
      * Get the texture
      * @returns {WebGLTexture} The SDF texture
      */
     get texture() {
         return this.textures[this.front];
+    }
+
+    /**
+     * Get the framebuffer
+     * @returns {WebGLFramebuffer} The SDF framebuffer
+     */
+    get frameBuffer() {
+        return this.frameBuffers[this.front];
     }
 
     /**
@@ -45,15 +66,15 @@ export class SDF {
     seed(points) {
         const initial = new Uint8Array(this.width * this.height << 2);
 
-        for (let y = 0; y < this.height; ++y) for (let x = 0; x < this.width; ++x)
-            initial[(x + y * this.width << 2) + 3] = 255;
-
         for (const point of points) {
             const x = Math.round(point.x);
             const y = Math.round(point.y);
             const index = x + y * this.width << 2;
 
-            initial[index] = initial[index + 1] = initial[index + 2] = 255;
+            initial[index] = Math.round(0xFF * x / this.width);
+            initial[index + 1] = Math.round(0xFF * y / this.height);
+
+            initial[index + 3] = 255;
         }
 
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
@@ -67,5 +88,17 @@ export class SDF {
             this.gl.RGBA,
             this.gl.UNSIGNED_BYTE,
             initial);
+
+        this.shader.use(this.width, this.height);
+
+        for (let step = 0; step < this.range; ++step) {
+            this.flip();
+
+            this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[1 - this.front]);
+            this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.frameBuffer);
+            this.gl.viewport(0, 0, this.width, this.height);
+
+            this.quad.draw();
+        }
     }
 }
