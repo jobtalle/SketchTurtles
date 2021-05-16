@@ -14,10 +14,12 @@ export class ShaderShield extends Shader {
         `;
 
     static FRAGMENT = `#version 100
+        uniform sampler2D sdf;
+    
         varying mediump vec2 iUv;
         
         void main() {
-            gl_FragColor = vec4(iUv, .0, 1.);
+            gl_FragColor = texture2D(sdf, iUv);
         }
         `;
 
@@ -33,9 +35,13 @@ export class ShaderShield extends Shader {
 
     /**
      * Use this shader
+     * @param {SDF} sdf The SDF for this shield
      */
-    use() {
+    use(sdf) {
         super.use();
+
+        this.gl.activeTexture(this.gl.TEXTURE0);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, sdf.texture);
 
         this.gl.enableVertexAttribArray(this.aPosition);
         this.gl.vertexAttribPointer(this.aPosition, 2, this.gl.FLOAT, false, 8, 0);
