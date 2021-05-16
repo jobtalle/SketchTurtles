@@ -5,7 +5,7 @@ import {Vector} from "../vector.js";
 
 export class ShieldMaker {
     static MAX_WIDTH = 300;
-    static MAX_HEIGHT = 300;
+    static MAX_HEIGHT = 500;
 
     /**
      * Construct a shield maker

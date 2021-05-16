@@ -20,7 +20,7 @@ export class ShaderDistanceField extends Shader {
             for (int y = -1; y < 2; ++y) {
                 for (int x = -1; x < 2; ++x) {
                     lowp vec4 pixel = texture2D(source, (gl_FragCoord.xy + vec2(x, y)) / size);
-                    lowp float distance = length(pixel.xy - gl_FragCoord.xy / size);
+                    lowp float distance = length(pixel.xy * size - gl_FragCoord.xy);
 
                     if (pixel.a != 0. && distance < bestDistance) {
                         bestDistance = distance;
