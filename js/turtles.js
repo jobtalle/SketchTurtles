@@ -14,6 +14,11 @@ export class Turtles {
         this.turtles = [];
 
         this.turtles.push(new Turtle(this.shieldMaker.makeShield()));
+
+        window.addEventListener("keydown", event => {
+            if (event.code === "Space")
+                this.turtles[0] = new Turtle(this.shieldMaker.makeShield());
+        });
     }
 
     /**

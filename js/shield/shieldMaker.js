@@ -22,6 +22,36 @@ export class ShieldMaker {
     }
 
     /**
+     * Make centroids
+     * @param {number} width The shield width
+     * @param {number} height The shield height
+     * @param {number} radius The centroid radius
+     * @returns {Vector[]} The centroids
+     */
+    makeCentroids(width, height, radius) {
+        const cells = [];
+        const cellWidth = radius * 2;
+        const cellHeight = Math.sqrt(3) * radius;
+
+        vertical: for (let y = 0;; ++y) {
+            for (let x = 0;; ++x) {
+                const xCell = x * cellWidth * .75;
+                const yCell = (y + (x & 1) * .5) * cellHeight;
+
+                if (xCell > width)
+                    break;
+
+                if (yCell > height)
+                    break vertical;
+
+                cells.push(new Vector(xCell, yCell));
+            }
+        }
+
+        return cells;
+    }
+
+    /**
      * Make a shield
      * @returns {HTMLCanvasElement} A shield
      */
@@ -31,19 +61,14 @@ export class ShieldMaker {
         shield.width = ShieldMaker.MAX_WIDTH;
         shield.height = ShieldMaker.MAX_HEIGHT;
 
-        const points = [];
-
-        for (let i = 0; i < 18; ++i)
-            points.push(new Vector(Math.random() * shield.width, Math.random() * shield.height));
-
-        this.sdf.seed(points);
+        this.sdf.seed(this.makeCentroids(shield.width, shield.height, 48));
 
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
         this.gl.viewport(0, 0, ShieldMaker.MAX_WIDTH, ShieldMaker.MAX_HEIGHT);
 
         this.shaderShield.use(this.sdf);
         this.quad.draw();
-
+        console.log("qd");
         shield.getContext("2d").drawImage(this.canvas, 0, 0);
 
         return shield;
