@@ -4,8 +4,8 @@ import {DistanceField} from "./gl/distanceField.js";
 import {Vector} from "../vector.js";
 
 export class ShieldMaker {
-    static MAX_WIDTH = 300;
-    static MAX_HEIGHT = 500;
+    static MAX_WIDTH = 800;
+    static MAX_HEIGHT = 600;
 
     /**
      * Construct a shield maker
@@ -44,7 +44,11 @@ export class ShieldMaker {
                 if (yCell > height)
                     break vertical;
 
-                cells.push(new Vector(xCell, yCell));
+                const offset = 0;
+
+                cells.push(new Vector(
+                    xCell + (Math.random() * 2 - 1) * offset,
+                    yCell + (Math.random() * 2 - 1) * offset));
             }
         }
 
@@ -68,7 +72,7 @@ export class ShieldMaker {
 
         this.shaderShield.use(this.sdf);
         this.quad.draw();
-        console.log("qd");
+
         shield.getContext("2d").drawImage(this.canvas, 0, 0);
 
         return shield;

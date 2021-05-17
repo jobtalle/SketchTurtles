@@ -17,6 +17,9 @@ export class ShaderShield extends Shader {
         uniform sampler2D sdf;
         uniform mediump vec2 size;
         uniform mediump vec3 seed;
+        uniform lowp vec4 low;
+        uniform lowp vec4 high;
+        uniform lowp int axes;
     
         varying mediump vec2 iUv;
         
@@ -63,26 +66,36 @@ export class ShaderShield extends Shader {
                 fract(at.z));
         }
         
+        mediump vec2 mirror(mediump vec2 vector, mediump vec2 normal) {
+            mediump float magnitude = dot(normal, vector);
+            
+            if (magnitude > 0.0)
+                return vector;
+            
+            return vector - 2.0 * normal * magnitude;
+        }
+        
         void main() {
             mediump vec2 position = (texture2D(sdf, iUv).xy - iUv) * size;
             
-            if (position.x < 0.)
-                position.x = -position.x;
-            
-            if (position.y < 0.)
-                position.y = -position.y;
+            for (int axis = 0; axis < 10; ++axis) {
+                mediump float angle = 3.141593 * float(axis) / float(axes);
+                mediump vec2 normal = vec2(cos(angle), sin(angle));
                 
-            lowp vec4 low = vec4(0.4, 0.9, 0.5, 1.0);
-            lowp vec4 high = vec4(0.4, 0.2, 0.5, 1.0);
+                position = mirror(position, normal);
+               
+                if (axis == axes)
+                    break;
+            }
+                
+            mediump float dist = length((texture2D(sdf, iUv).xy - iUv) * size) / 70.;
             
-            lowp float noise = cubicNoise(vec3(position * .1, 0.) + seed);
+            lowp float noise = cubicNoise(vec3(position * .1, 0.) + seed) - dist * .5;
             
             if (noise < 0.5 && noise > 0.3)
                 gl_FragColor = low;
             else
                 gl_FragColor = high;
-        
-            mediump float dist = length((texture2D(sdf, iUv).xy - iUv) * size) / 70.;
 
             gl_FragColor.rgb *= 1. - .6 * dist;
         }
@@ -98,6 +111,9 @@ export class ShaderShield extends Shader {
         this.aPosition = this.attributeLocation("position");
         this.uSize = this.uniformLocation("size");
         this.uSeed = this.uniformLocation("seed");
+        this.uLow = this.uniformLocation("low");
+        this.uHigh = this.uniformLocation("high");
+        this.uAxes = this.uniformLocation("axes");
     }
 
     /**
@@ -112,6 +128,20 @@ export class ShaderShield extends Shader {
         this.gl.enableVertexAttribArray(this.aPosition);
         this.gl.vertexAttribPointer(this.aPosition, 2, this.gl.FLOAT, false, 8, 0);
         this.gl.uniform2f(this.uSize, sdf.width, sdf.height);
-        this.gl.uniform3f(this.uSeed, Math.random() * 20 - 10, Math.random() * 20 - 10, Math.random() * 20 - 10);
+        this.gl.uniform3f(this.uSeed,
+            Math.random() * 50 - 25,
+            Math.random() * 50 - 25,
+            Math.random() * 50 - 25);
+        this.gl.uniform4f(this.uLow,
+            Math.random(),
+            Math.random(),
+            Math.random(),
+            1);
+        this.gl.uniform4f(this.uHigh,
+            Math.random(),
+            Math.random(),
+            Math.random(),
+            1);
+        this.gl.uniform1i(this.uAxes, 1 + Math.floor(Math.random() * 6));
     }
 }
