@@ -16,8 +16,15 @@ export class Turtles {
         this.turtles.push(new Turtle(this.shieldMaker.makeShield()));
 
         window.addEventListener("keydown", event => {
-            if (event.code === "Space")
-                this.turtles[0] = new Turtle(this.shieldMaker.makeShield());
+            this.turtles[0] = new Turtle(this.shieldMaker.makeShield());
+        });
+
+        window.addEventListener("mousedown", event => {
+            this.turtles[0] = new Turtle(this.shieldMaker.makeShield());
+        });
+
+        window.addEventListener("touchdown", event => {
+            this.turtles[0] = new Turtle(this.shieldMaker.makeShield());
         });
     }
 
